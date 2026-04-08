@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Vaxo</title>
+  <style>
+    body {
+      background: black;
+      color: white;
+      font-family: Arial;
+      text-align: center;
+    }
+    input, button {
+      padding: 10px;
+      margin: 5px;
+      border-radius: 5px;
+      border: none;
+    }
+    button {
+      background: red;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>🔥 VAXO</h1>
+
+<h3>Signup</h3>
+<input id="su_user" placeholder="Username"><br>
+<input id="su_pass" type="password" placeholder="Password"><br>
+<button onclick="signup()">Signup</button>
+
+<h3>Login</h3>
+<input id="li_user" placeholder="Username"><br>
+<input id="li_pass" type="password" placeholder="Password"><br>
+<button onclick="login()">Login</button>
+
+<h3>Post</h3>
+<input id="post_content" placeholder="What's on your mind?"><br>
+<button onclick="post()">Post</button>
+
+<h3>Feed</h3>
+<div id="feed"></div>
+
+<script>
+let currentUser = "";
+
+async function signup() {
+  const res = await fetch("/signup", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      username: document.getElementById("su_user").value,
+      password: document.getElementById("su_pass").value
+    })
+  });
+  alert(await res.text());
+}
+
+async function login() {
+  const res = await fetch("/login", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      username: document.getElementById("li_user").value,
+      password: document.getElementById("li_pass").value
+    })
+  });
+
+  const data = await res.json();
+  if (data.success) {
+    currentUser = data.user.username;
+    alert("Logged in!");
+    loadPosts();
+  } else {
+    alert(data.error);
+  }
+}
+
+async function post() {
+  await fetch("/post", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      username: currentUser,
+      content: document.getElementById("post_content").value
+    })
+  });
+  loadPosts();
+}
+
+async function loadPosts() {
+  const res = await fetch("/posts");
+  const posts = await res.json();
+
+  const feed = document.getElementById("feed");
+  feed.innerHTML = "";
+
+  posts.forEach(p => {
+    const div = document.createElement("div");
+    div.innerText = p.username + ": " + p.content;
+    feed.appendChild(div);
+  });
+}
+</script>
+
+</body>
+</html>
